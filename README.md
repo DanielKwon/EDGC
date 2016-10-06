@@ -1,14 +1,14 @@
 # MeshParser
 
- ============= MeshParser v1.0 =================
-| Find the disease name for input keyword      |
-| - input keyword can be name or uniqueid      |
- ===============================================
+     ============= MeshParser v1.0 =================
+    | Find the disease name for input keyword      |
+    | - input keyword can be name or uniqueid      |
+     ===============================================
 
-Usage : python MeshParser.py MeSH(xml) keyword direction result_type
-        * keyword     : category or disease name in MeSH / whole / whole-path
-        * direction   : up(categories) / down(dieseases)
-        * result_type : all / unique (for direction down only)
+    Usage : python MeshParser.py MeSH(xml) keyword direction result_type
+            * keyword     : category or disease name in MeSH / whole / whole-path
+            * direction   : up(categories) / down(dieseases)
+            * result_type : all / unique (for direction down only)
 
 Required : MeSH(xml) should be downloaded to your machine before use
           ftp://nlmpubs.nlm.nih.gov/online/mesh/MESH_FILES/xmlmesh/desc2017.xml
