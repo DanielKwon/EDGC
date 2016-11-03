@@ -11,6 +11,7 @@ def parse_mesh(filename):
     `DescriptorRecord` instance for subsequent processing."""
     MeshNameDict = {}
     MeshUiDict = {}
+    MeshFullWordDict = defaultdict(list)
 
     def tree(): return defaultdict(tree)
 
@@ -31,11 +32,15 @@ def parse_mesh(filename):
                 # make lowercase for Dictionary
                 MeshNameDict[DR.name.lower()] = DR.tree_numbers
                 MeshUiDict[DR.ui.lower()] = DR.tree_numbers
+
+            	word_list = [x.strip(',') for x in DR.name.split()]    
+            	for word in word_list:
+            		MeshFullWordDict[word.lower()] += [DR.name]
             
                 for item in DR.tree_numbers:
                     add(MeshTree, item.split('.'), DR.name, DR.ui)
 
-    return MeshNameDict, MeshUiDict, MeshTree
+    return MeshNameDict, MeshUiDict, MeshTree, MeshFullWordDict
 
 def date_from_mesh_xml(xml_elem):
     year = xml_elem.find('./Year').text
@@ -217,11 +222,11 @@ def findDiseaseName(t):
           findDiseaseName(v)
 
 def findDiseasePath(disease, MeshNameDic, MeshUiDic, MeshTree, IsUniqueID):
-
+    
     try : 
         if IsUniqueID == True:
             target_tree = MeshUiDic[disease]
-        else:
+        else:            
             target_tree = MeshNameDic[disease]
     except KeyError:
         print "%s : Not Found in XML data" % disease
@@ -255,9 +260,10 @@ def dicts(t):
 def show_title():
 
     print "\n\n"
-    print " ============= MeshParser v1.0 =================" 
+    print " ============= MeshParser v2.0 =================" 
     print "| Find the disease name for input keyword      |"
-    print "| - input keyword can be name or uniqueid      |"       
+    print "| - enable tree structure for down search      |"           
+    print "| - added disease name partial search          |"  
     print " ==============================================="     
     print "\n\n"
 
@@ -268,30 +274,34 @@ if __name__ == '__main__':
     show_title()
     #read_config()
 
-    if argc != 5:
-        print "Usage : python MeshParser_v1.py MeSH(xml) keyword direction result_type"
-        print "        * keyword     : category or disease name in MeSH / whole / whole-path"
+    if argc != 6:
+        print "Usage : python MeshParser_v2.py MeSH(xml) keyword direction result_type show_path"
+        print "        * keyword     : category or disease name in MeSH / whole / whole-path / -partial "
         print "        * direction   : up(categories) / down(dieseases)"
         print "        * result_type : all / unique (for direction down only)"    
+        print "        * show_path   : yes / no"
 
         sys.exit(0)
 
     lasttime = date.today()
     IsUniqueID = False
+    IsPartial = False
     
     #1. Make Hash Dict
-    MeshName2Dict = {} 
-    MeshName2Dict, MeshUi2Dict, MeshTree = parse_mesh(sys.argv[1])
+    
+    MeshName2Dict, MeshUi2Dict, MeshTree, MeshFullWordDict = parse_mesh(sys.argv[1])
     keyword = sys.argv[2].lower()
     direction = sys.argv[3].lower()
     result_type = sys.argv[4].lower()
+    show_path = sys.argv[5].lower()
     #keyword = sys.argv[3]
 
     if keyword[0] == 'd' and len(keyword) == 7 and keyword[1:].isdigit():
         # keyword is Unique ID
         IsUniqueID = True
-
-
+    elif keyword[0] == "-":
+    	IsPartial = True
+    
     if keyword == 'whole':
         findDiseaseName(MeshTree)
         
@@ -308,10 +318,15 @@ if __name__ == '__main__':
     elif keyword == 'whole-path':
         findDiseaseName(MeshTree)
         
-        for name in set(result_list):            
+        for name in set(result_list):                    
             findDiseasePath(name[0].lower(), MeshName2Dict, MeshUi2Dict, MeshTree, IsUniqueID)
+    elif IsPartial == True:
+    	disease_list = MeshFullWordDict[keyword[1:]] 
+        print disease_list
+        for name in disease_list:
+            findDiseasePath(name.lower(), MeshName2Dict, MeshUi2Dict, MeshTree, False)
+
     else:
-        
         if direction == 'up':
             findDiseasePath(keyword, MeshName2Dict, MeshUi2Dict, MeshTree, IsUniqueID)
 
@@ -319,27 +334,35 @@ if __name__ == '__main__':
             try: 
                 if IsUniqueID == True:
                     target_tree = MeshUi2Dict[keyword]
-                else:
-                    target_tree = MeshName2Dict[keyword]
+                else:                                      
+                    target_tree = MeshName2Dict[keyword] 
+
             except KeyError:
-                print "%s : Not Found in XML data" % keyword
+                print "%s : Not Found in XML data" % keyword                
                 sys.exit(0)        
                     
             for treenum in target_tree:
                 #print "\n[%s]" %(treenum)
-                findDiseaseName(getRootforMeshTree(treenum, MeshTree))
-                
-            #print result_list
+                findDiseaseName(getRootforMeshTree(treenum, MeshTree))                
+
             if result_type == 'all':
-                for i in result_list:
-                    print "%s (%s)" %(i[0], i[1])
+                if show_path == 'yes':                    
+                    for name in result_list:
+                        findDiseasePath(name[0].lower(), MeshName2Dict, MeshUi2Dict, MeshTree, False)
+                else:
+                    for i in result_list:
+                        print "%s (%s)" %(i[0], i[1])
                     
             elif result_type == 'unique':
-                for i in set(result_list):
-                    print "%s (%s)" %(i[0], i[1])
+                if show_path == 'yes':
+                    for name in set(result_list):            
+                        findDiseasePath(name[0].lower(), MeshName2Dict, MeshUi2Dict, MeshTree, False)
+                else:
+                    for i in set(result_list):
+                        print "%s (%s)" %(i[0], i[1])                	
             else:
                 print "argument error!"
-                sys.exit(0)
+                sys.exit(0)            
 
         else:
             print "argument error!"
