@@ -1,11 +1,13 @@
 # MeshParser
 
- ============= MeshParser v2.0 =================
-| Find the disease name for input keyword      |
-| - enable tree structure for down search      |
-| - added disease name partial search          |
- ===============================================
 
+
+      ============= MeshParser v2.0 =================
+     | Find the disease name for input keyword      |
+     | - enable tree structure for down search      |
+     | - added disease name partial search          |
+      ===============================================
+      
      Usage : python MeshParser_v2.py MeSH(xml) keyword direction result_type show_path
              * keyword     : category or disease name in MeSH / whole / whole-path / -partial
              * direction   : up(categories) / down(dieseases)
