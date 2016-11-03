@@ -322,7 +322,7 @@ if __name__ == '__main__':
             findDiseasePath(name[0].lower(), MeshName2Dict, MeshUi2Dict, MeshTree, IsUniqueID)
     elif IsPartial == True:
     	disease_list = MeshFullWordDict[keyword[1:]] 
-        print disease_list
+
         for name in disease_list:
             findDiseasePath(name.lower(), MeshName2Dict, MeshUi2Dict, MeshTree, False)
 
